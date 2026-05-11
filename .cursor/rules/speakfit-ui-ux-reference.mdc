@@ -1,0 +1,36 @@
+---
+description: SpeakFit Quiet Studio UI/UX reference for learner-facing interface work
+alwaysApply: true
+---
+
+# SpeakFit UI/UX Reference Rule
+
+Before creating or changing any SpeakFit UI/UX, read and follow these references:
+
+1. `_bmad-output/planning-artifacts/prd.md` for product scope and MVP requirements.
+2. `DESIGN.md` for the Quiet Studio design system and visual thesis.
+3. `docs/ui-ux/speakfit-quiet-studio-reference.md` for the canonical UI/UX prototype.
+4. `docs/ui-ux/shadcn-tailwind-implementation-contract.md` for translating Canvas roles into production `shadcn/ui` + Tailwind wrappers.
+
+Treat `docs/ui-ux/speakfit-quiet-studio-reference.md` as the visual/interaction source of truth, not production code. Recreate its UX intent in the app’s real component system. For production frontend work, follow `docs/ui-ux/shadcn-tailwind-implementation-contract.md`; do not import or depend on `cursor/canvas`.
+
+Required UI/UX shape:
+
+- Desktop-first PWA with compact sidebar, top navbar, and focused workspace.
+- Learner pages: `Onboarding`, `Today`, `Missions`, `Phrases`, `Progress`, `Settings`.
+- Internal/private testing page: `Operator`; do not mix it into learner flows in production.
+- `Today` must center the daily mission loop: `Warm-up -> Shadow -> Record -> Feedback -> Fallback -> Complete`.
+- Preserve the three-area practice workspace: mission rail, central rehearsal stage, coach panel.
+- Feedback must feel like a supportive coach: one strength, one fix, one better phrase, one retry action.
+- Saved phrases must include original context and review/reuse actions.
+- Progress must stay lightweight: missions, attempts, retries, reused phrases, confidence 1–5, before/after evidence.
+- Privacy, provider notice, deletion/export, and manual text fallback are part of the MVP trust layer.
+
+Avoid:
+
+- Generic admin dashboard feel.
+- Full course-library expansion beyond seeded MVP missions.
+- Mobile-first card flow unless explicitly promoted.
+- IELTS/report-card scoring, harsh red/green corrections, leaderboards, coins, shops, or reward economy.
+- Chatbot-first UI or blank prompt-first experience.
+- Cream/serif/terracotta vintage styling.

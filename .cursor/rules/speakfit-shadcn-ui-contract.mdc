@@ -1,0 +1,55 @@
+---
+description: SpeakFit shadcn/ui + Tailwind production UI contract
+alwaysApply: true
+---
+
+# SpeakFit Shadcn/Tailwind UI Contract Rule
+
+When creating or modifying SpeakFit frontend UI, do not depend on `cursor/canvas` internals. The Canvas source is only a visual and interaction reference. Preserve the UI direction, color mood, visual hierarchy, layout shape, and flow; do not treat Canvas preview pixel dimensions as binding production specs.
+
+Before frontend UI work, read and follow:
+
+1. `_bmad-output/planning-artifacts/prd.md`
+2. `DESIGN.md`
+3. `docs/ui-ux/speakfit-quiet-studio-reference.md`
+4. `docs/ui-ux/shadcn-tailwind-implementation-contract.md`
+5. `.cursor/rules/speakfit-ui-ux-reference.mdc`
+
+Production implementation must translate Canvas roles into project-owned `shadcn/ui` + Tailwind wrappers.
+
+Required mapping discipline:
+
+- `Button` -> project button wrapper built on `shadcn/ui` `Button` with SpeakFit variants.
+- `Card`, `CardHeader`, `CardBody` -> `SpeakFitCard` wrappers around shadcn card primitives.
+- `Grid`, `Row`, `Stack` -> project layout wrappers or consistent Tailwind grid/flex utilities.
+- `Pill` -> quiet badge/status wrapper.
+- `Stat` -> lightweight metric wrapper.
+- `H1`, `H2`, `H3`, `Text` -> project typography wrappers or consistent typography variants.
+- `useCanvasState` -> normal production state: React state, URL state, persisted settings, or server state as appropriate.
+- `useHostTheme` -> Tailwind/theme-provider tokens.
+
+Preferred production UI kit location:
+
+- `src/components/speakfit/ui/`
+
+Do not:
+
+- import `cursor/canvas` into app code,
+- copy Canvas-only APIs as production dependencies,
+- rebuild the UI with arbitrary raw Tailwind classes on every page,
+- replace the Quiet Studio shell with a generic dashboard or chatbot-first UI,
+- add heavy gamification, leaderboard, IELTS/report-card scoring, or course-marketplace expansion unless the PRD is updated.
+
+Preserve:
+
+- desktop-first app shell with sidebar and top navbar,
+- `Today` three-area workspace: mission rail, rehearsal stage, coach panel,
+- mission loop: `Warm-up -> Shadow -> Record -> Feedback -> Fallback -> Complete`,
+- learner pages: `Onboarding`, `Today`, `Missions`, `Phrases`, `Progress`, `Settings`,
+- internal gated `Operator` page,
+- Quiet Studio color mood, visual hierarchy, and supportive coach tone,
+- privacy trust layer and manual text fallback.
+
+Production sizing is flexible. Exact Canvas widths, heights, and spacing are not binding; adapt them to the real web viewport while keeping the same perceived layout and UX hierarchy.
+
+If implementation must deviate from the Canvas reference, document the reason in the relevant planning artifact or work order before coding.
