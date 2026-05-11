@@ -1,8 +1,18 @@
+---
+doc_type: playbook
+stage: planning
+load_policy: when_user_asks_about_workflow
+size_warning: large
+summary: "Playbook Solo PM + AI agents: RACI, sprint cadence, quality gates, AI work order, artifact contract, RAID, release."
+---
+
 # BMAD Method Workflow cho SpeakFit English
+
+> **Lưu ý cho AI agents:** File này ~700 dòng. Đọc mục lục (§1–§20) qua `Read` với `limit` nhỏ trước, rồi load đúng section liên quan. KHÔNG load full mỗi turn. §18 là Time budget & 5-phase plan; §19 là Amelia BE Learning Mode (deep dive briefing protocol).
 
 Tài liệu này là playbook vận hành dự án **SpeakFit English — Personalized English Coach PWA** theo mô hình **Solo PM (background dev) quản lý đội AI agents** trong Cursor IDE.
 
-Nguồn đầu vào chính hiện tại: `IDEA_BRIEF.md`. `PLANNING_QUESTIONS.md` là nguồn legacy nếu cần đối chiếu.
+Nguồn đầu vào chính cho BMAD: `PLANNING_QUESTIONS.md` (primary planning canvas, đã chốt phần lớn quyết định). `IDEA_BRIEF.md` chỉ là vision/inspiration reference, dùng để bổ sung "color" cho persona/vision/council brainstorm khi cần. Sau khi BMAD Product Brief được Solo PM duyệt, `PLANNING_QUESTIONS.md` sẽ chuyển sang `status: archived` để tránh decision drift.
 
 ---
 
@@ -578,7 +588,90 @@ Rules:
 
 ---
 
-## 18. Operating principles cho Solo PM quản lý AI
+## 18. Time budget & 5-phase plan
+
+> **Quyết định 2026-05-05**: 12 tuần × sprint 1 tuần. Working mode = 100% vibe coding với GPT-5.5. Goal #1 = interview portfolio + AI orchestration story.
+
+### Bảng tổng
+
+| Phase | Tuần | Sprint | Mục tiêu chính | Output portfolio chủ lực |
+|---|---|---|---|---|
+| **P1 Discovery + Planning** | 1 | S0 | Brief, PRFAQ, PRD, UX Spec, Architecture, ADR-001 đến ADR-005, Epics, Stories | 5 ADR đầu, PRD, Architecture doc |
+| **P2 MVP Build** | 2–5 | S1–S4 | Daily voice loop end-to-end cho self + wife (auth → mission → record → STT → feedback → progress) | Working app, code review docs, sprint retros, `docs/interview-notes.md` bắt đầu có entry |
+| **P3 Dogfood + Iterate** | 6–7 | S5–S6 | Solo PM + vợ dùng thật, fix bugs theo real-usage feedback | Bug fixes log, RAID actively used, dogfood retro, demo screenshot |
+| **P4 BE Depth Showcase** | 8–10 | S7–S9 | Thêm 3 BE concept lớn cho interview: (a) **Auth hardening** — session vs JWT, hashing, MFA, rate limit / IP; (b) **Observability** — logs + metrics + traces với OpenTelemetry; (c) **Redis cache + invalidation strategy** | 3 ADR mới, before/after benchmark, security checklist, 3 entry chất lượng cao trong `docs/interview-notes.md` |
+| **P5 Interview Polish** | 11–12 | S10–S11 | README chuyên nghiệp, demo video 5–10 phút, "How I built with AI agents" writeup, full project retro | Portfolio bundle: repo + writeup + video + interview notes |
+
+### Phase 4 — chi tiết 3 BE concept
+
+| Sprint | Concept | Sub-decisions cần ADR | Demo / benchmark |
+|---|---|---|---|
+| S7 (Tuần 8) | **Auth hardening** | session-cookie vs JWT cho PWA mobile; argon2id params; rate limit per-IP vs per-user; MFA strategy (TOTP) | Pen-test checklist self-run, before/after attack-surface diff |
+| S8 (Tuần 9) | **Observability** | Otel collector self-host vs SaaS free tier; log format (JSON line); trace sampling rate; metric cardinality budget | Dashboard demo: latency p95/p99, error rate, request rate; 1 trace có root cause được kể bằng câu chuyện |
+| S9 (Tuần 10) | **Redis cache + invalidation** | TTL vs event-driven invalidation; cache-aside vs write-through; thundering herd mitigation; Redis sentinel/cluster cần không | Before/after benchmark: latency p95 hot endpoint, cache hit rate target ≥80% |
+
+### Sprint cadence chốt
+
+- **Sprint length: 1 tuần** (Mon→Sun, review/retro Sun tối hoặc Mon đầu tuần sau).
+- **Sprint planning**: Mon morning, output `docs/sprints/sprint-NN-plan.md` từ template.
+- **Mid-sprint correction**: Wed evening — chỉ chạy nếu RAID có blocker.
+- **Sprint review**: Sun, demo + `docs/sprints/sprint-NN-review.md`.
+- **Retrospective**: Sun cuối, `docs/sprints/sprint-NN-retro.md`. Nếu retro yêu cầu sửa playbook → patch file này.
+
+### Buffer policy
+
+- Không reserve buffer riêng. Nếu Phase trễ, **co Phase 5** (Interview Polish) trước, vì P5 là content work, ít khẩn cấp hơn build.
+- Nếu Phase 2 trễ > 3 ngày, Solo PM chạy `bmad-correct-course` để re-scope MVP, không đẩy sang Phase 3.
+
+---
+
+## 19. Amelia Learning Mode — BE Deep Dive Briefing
+
+> **Bắt buộc** với mọi story tag `area: backend`. Mục tiêu: học BE depth qua review + giải thích, không qua gõ code, lấy material cho interview portfolio.
+
+### Cơ chế
+
+- Customize tại `_bmad/custom/bmad-agent-dev.toml` (override base `.claude/skills/bmad-agent-dev/customize.toml`).
+- Protocol đầy đủ tại `docs/templates/amelia-be-deep-dive.md`.
+- Trigger: story tag `area: backend`, hoặc menu `BD` (BE Deep Dive Briefing), hoặc Solo PM nói "deep dive cái này".
+
+### 7 phần briefing (Amelia phải đi đủ trước khi viết code)
+
+1. **§1 TASK FRAMING (WHY)** — vấn đề business/user, vị trí trong system, hidden requirements.
+2. **§2 DECISION RECORD (mini-ADR)** — ≥2 options + pros/cons + decision + reversibility.
+3. **§3 PITFALL RADAR** — ≥5 error modes phủ ≥4 nhóm (compile, runtime, prod-only, security, correctness, operational).
+4. **§4 MINDSET** — 2–4 mental models áp dụng HERE (idempotency, defense in depth, fail-fast, …).
+5. **§5 TIPS & TRICKS** — ≥5 tip cụ thể với Bun/Hono/Drizzle/Postgres/R2.
+6. **§6 INTERVIEW ANGLE** — 30s pitch + 3 follow-up Q&A skeleton + 1 honest limitation.
+7. **§7 IMPLEMENTATION PLAN** — tests trước (file + AC ID), files touch, commit slices, story-specific DoD.
+
+Sau §7, Amelia HỎI: *"Implement luôn (a), deep-dive thêm phần nào (b), hay đổi approach (c)?"* và CHỜ Solo PM trả lời.
+
+### Hậu kỳ — interview note
+
+Sau mỗi BE story Done, Amelia append 1 entry vào `docs/interview-notes.md`:
+
+- Topic + concept BE chính.
+- Files đã touch.
+- 30s elevator pitch (copy từ §6).
+- 3 follow-up question skeleton.
+- 1 honest limitation.
+- Linked ADR (nếu có).
+
+File này là portfolio asset Solo PM ôn trước phỏng vấn.
+
+### Anti-patterns cấm
+
+- Skip briefing với BE story.
+- §3 PITFALL chung chung ("error handling, validation").
+- §4 MINDSET liệt kê model mà không gắn "applies HERE".
+- §6 INTERVIEW ANGLE thiếu follow-up question.
+- Tự chạy `bmad-dev-story` khi Solo PM chưa nói "implement".
+- Quên append `docs/interview-notes.md` sau Done.
+
+---
+
+## 20. Operating principles cho Solo PM quản lý AI
 
 ```text
 AI execute, PM decide.
@@ -598,3 +691,19 @@ Nếu không chắc bước tiếp theo:
 ```text
 Dùng bmad-help và hỏi: Tôi đang ở bước nào, tiếp theo nên chạy skill nào?
 ```
+
+## Related
+
+- [[docs/INDEX|Repo Index]] — load policy và maintenance triggers.
+- [[PLANNING_QUESTIONS|Planning Questions]] — primary planning canvas.
+- [[IDEA_BRIEF|Idea Brief]] — vision reference.
+- [[product-brief|Product Brief]] — Discovery output.
+- [[prd|PRD]] — requirement source of truth.
+- [[prd-validation-report|PRD Validation Report]] — gate evidence cho PRD.
+- [[ux-design-specification|UX Design Specification]] — UX gate output.
+- [[architecture|Architecture]] — technical gate output.
+- [[decisions|Decision Log]] — quyết định product/process.
+- [[raid|RAID Log]] — risks/assumptions/issues/dependencies.
+- [[ADR-001-cursor-first-ai-agent-orchestration|ADR-001 Cursor-first AI Orchestration]].
+- [[WO-2026-001-product-brief|WO-2026-001 Product Brief]].
+- [[WO-2026-002-prd|WO-2026-002 PRD]].

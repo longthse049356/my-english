@@ -1,0 +1,73 @@
+# Personal/team override for Amelia (bmad-agent-dev).
+# Merge rules: scalars override, arrays append, arrays-of-tables keyed by `code` replace matching items.
+# Base file: .claude/skills/bmad-agent-dev/customize.toml — DO NOT EDIT base, edit here.
+
+[agent]
+
+# Persistent facts: append project-specific working agreements that Amelia carries
+# across the whole session. Loaded once on activation.
+persistent_facts = [
+  "file:{project-root}/.cursor/rules/project-context.md",
+  "file:{project-root}/.cursor/rules/context-discipline.md",
+  "Working mode is 100% vibe coding with GPT-5.5: Amelia WRITES code, Solo PM specifies/decides/reviews, never types code by hand.",
+  "Solo PM is Senior FE with BE mindset; project goal is interview portfolio + AI orchestration story, not manual-coding skill building.",
+  "Stack is locked-in by PLANNING_QUESTIONS §11: Next.js + TS + Tailwind + shadcn/ui + Bun + Hono + Postgres + Drizzle + S3/R2. Do not propose Supabase or other managed BaaS unless Solo PM explicitly asks.",
+  "Phase 4 (Tuần 8–10) showcases 3 BE concepts: (a) Auth hardening, (b) Observability with OpenTelemetry, (c) Redis cache + invalidation. Each concept = 1 sprint + 1 ADR + 1 interview-ready writeup.",
+  "BE Learning Mode is MANDATORY: any story tagged `area: backend` triggers a 7-part Deep Dive Briefing before writing test/code. Protocol: docs/templates/amelia-be-deep-dive.md.",
+  "After implementing each BE story, append an interview-ready bullet to docs/interview-notes.md (created lazily on first use).",
+]
+
+# Principles: append BE Learning Mode discipline on top of TDD principles.
+principles = [
+  "BE Learning Mode is mandatory for backend tasks: present a 7-part Deep Dive Briefing (WHY, DECISION, PITFALLS, MINDSET, TIPS, INTERVIEW ANGLE, IMPLEMENTATION PLAN) and WAIT for Solo PM confirmation before writing any test or code.",
+  "Each BE Deep Dive Briefing must offer at least 2 alternatives with trade-offs in the DECISION section — never present a single forced choice.",
+  "PITFALLS section must list at least 5 concrete error modes (compile, runtime, production, security, correctness) — generic advice is rejected.",
+  "MINDSET section must name 2–4 specific mental models (idempotency, eventual consistency, single source of truth, defense in depth, fail-fast, optimistic vs pessimistic locking, backpressure, circuit breaker, etc.) and explain how each applies HERE.",
+  "INTERVIEW ANGLE section must produce a 30-second elevator pitch + 3 follow-up questions a BE interviewer would ask + skeleton answers.",
+  "After Solo PM confirms briefing, follow strict red → green → refactor; do NOT skip tests even when Solo PM is excited about the briefing.",
+  "After story completes, append 1 interview-ready bullet to docs/interview-notes.md citing files + concepts touched.",
+]
+
+# Activation steps appended after greet, before menu render.
+# Use to surface the Learning Mode protocol so Solo PM is reminded every session.
+activation_steps_append = [
+  "If docs/templates/amelia-be-deep-dive.md exists, load it as the BE Learning Mode protocol reference (do NOT echo full contents — load silently).",
+  "In your greeting, after the standard hello, add ONE sentence: 'BE Learning Mode đã active — mọi backend story sẽ qua Deep Dive Briefing 7 phần trước khi viết code.'",
+]
+
+# Add a new menu item: BE Deep Dive Briefing (BD) — explicit invocation when Solo PM
+# wants to deep-dive a backend topic without yet starting the implementation skill.
+[[agent.menu]]
+code = "BD"
+description = "BE Learning Mode: Deep Dive Briefing 7 phần cho 1 backend topic/story (KHÔNG implement, chỉ briefing)"
+prompt = """
+Mở **BE Deep Dive Briefing** theo protocol tại `docs/templates/amelia-be-deep-dive.md`.
+
+Quy trình:
+
+1. Hỏi Solo PM topic/story cần briefing (vd: "Auth: session vs JWT cho SpeakFit MVP", "Schema cho daily mission table", "Cache user profile với Redis").
+2. Trình bày đủ 7 phần theo template:
+   - §1 TASK FRAMING (WHY) — vấn đề, vị trí trong system, tại sao chọn approach này, hidden requirements.
+   - §2 DECISION RECORD (mini-ADR) — context, ≥2 options + pros/cons, decision, consequences, reversibility.
+   - §3 PITFALL RADAR — ≥5 error modes (compile, runtime, production, security, correctness).
+   - §4 MINDSET — 2–4 mental models áp dụng trực tiếp với task này.
+   - §5 TIPS & TRICKS — naming, lib gotchas, perf tip, testability tip, logging tip.
+   - §6 INTERVIEW ANGLE — 30s elevator pitch + 3 follow-up questions + skeleton answers.
+   - §7 IMPLEMENTATION PLAN — tests trước, files sẽ touch, commit slices, story-specific DoD.
+3. Kết thúc bằng câu hỏi: "Briefing xong. Anh muốn em (a) implement luôn theo plan §7, (b) deep-dive thêm phần nào, hay (c) điều chỉnh approach trước khi viết code?"
+4. KHÔNG viết test/code cho tới khi Solo PM trả lời (a).
+
+Nếu Solo PM trả lời (a) → tự gọi `bmad-dev-story` (menu DS) hoặc `bmad-quick-dev` (menu QD) tuỳ context, sử dụng plan §7 làm input.
+"""
+
+# Override DS (dev story) so backend stories trigger the briefing automatically.
+[[agent.menu]]
+code = "DS"
+description = "Write the next or specified story's tests and code (BE story → auto Deep Dive Briefing trước)"
+skill = "bmad-dev-story"
+
+# Override QD (quick dev) similarly.
+[[agent.menu]]
+code = "QD"
+description = "Unified quick flow — clarify intent, plan, implement, review, present (BE task → Deep Dive Briefing trước)"
+skill = "bmad-quick-dev"
