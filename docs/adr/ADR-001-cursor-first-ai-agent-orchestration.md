@@ -35,3 +35,10 @@ Use Cursor IDE as the primary orchestration environment. Clone OpenCode advisory
 ## Follow-up
 
 - Delete `.opencode` after clone and workflow verification.
+
+## Related
+
+- [[decisions|Decision Log]] — entry 2026-05-04 đối với quyết định này.
+- [[BMAD_SPEAKFIT_WORKFLOW|BMAD SpeakFit Workflow]] — playbook nói rõ Cursor advisory + BMAD delivery.
+- [[architecture|Architecture]] — kế thừa nguyên tắc orchestration.
+- [[docs/INDEX|Repo Index]].
